@@ -1,0 +1,47 @@
+language: en-US
+
+reviews:
+  profile: assertive
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    ignore_title_keywords:
+      - "chore: release"
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "github-actions[bot]"
+
+  path_filters:
+    - "!managed_components/**"
+    - "!build*/**"
+    - "!espos/**"
+
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        espos-bathy-bridge is ESP-IDF firmware on espOS (the espos/
+        submodule). The USB mass-storage export and the file follower are
+        espOS's espos_usb_storage; this repo picks the card pins, the
+        watched files and where the records are uploaded. There are no
+        host tests here: the gate is a warning-free build for every target
+        in ci.yml, and behaviour is verified on hardware.
+
+        Flag: a generic fix (USB storage, the follower, WiFi, config, OTA,
+        web UI) made here instead of in espOS; anything that writes to the
+        card while it is exported; recorded records sent as Signal K deltas
+        or filed under vessels.self; progress advanced before the server
+        answered 2xx; a partition table change presented as reaching
+        fielded devices by OTA; committed credentials or LAN addresses;
+        comments that restate the code; version bumps outside the release
+        PR; AI attribution in commits or PR text.
+
+knowledge_base:
+  linked_repositories:
+    - repository: signalk-espOS/espOS
+      instructions: >-
+        The runtime pinned as the espos/ submodule: the prologue
+        (cmake/espos_project.cmake), espos_usb_storage (start, follow,
+        the Follower), espos_sk (espos_sk_http_post, the vessel context),
+        espos_config descriptors, and the reusable build-firmware.yml this repo's release
+        calls with the signing key and Docker Hub secrets.
