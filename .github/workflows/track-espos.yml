@@ -273,7 +273,10 @@ jobs:
             [ "$OLD" = "$TAG" ] && continue
             # Older releases only: a tag named by hand to roll back must not
             # close the bump to a newer one.
-            [ "$(printf '%s\n%s\n' "$OLD" "$TAG" | sort -V | tail -n1)" = "$TAG" ] || continue
+            # A prerelease of TAG itself is older, though sort -V ranks it above.
+            if [ "${OLD%%-*}" != "$TAG" ]; then
+              [ "$(printf '%s\n%s\n' "$OLD" "$TAG" | sort -V | tail -n1)" = "$TAG" ] || continue
+            fi
             # One PR that cannot be closed (closed meanwhile, say) must not
             # stop the rest, nor turn a run that opened its PR red.
             if ! gh pr close "$NUM" --repo "$GITHUB_REPOSITORY" \
