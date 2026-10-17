@@ -36,7 +36,12 @@ records go.
 ## Conventions
 
 - Angular conventional commits and PR titles, `type(scope): subject`, subject
-  lower case, at most 50 characters. PR titles become the release notes.
+  lower case, at most 50 characters. PR titles become the release notes:
+  release-please uses the notes GitHub generates, each PR with its author and
+  link, sorted by the label `label-by-title.yml` sets from the title's type
+  (`.github/release.yml`). Only feat, fix, perf, refactor, revert, a breaking
+  change or a `Release-As:` footer refreshes the release PR; after a change
+  to the release configuration, run `release-please.yml` by hand.
 - Branch names `feat/…`, `fix/…`, `docs/…`; never commit to `main`.
 - No AI attribution anywhere: no Co-Authored-By, no "Generated with".
 - No version bumps or tags by hand; release-please cuts releases.
