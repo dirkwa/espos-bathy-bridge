@@ -1,0 +1,14 @@
+{
+  "namespace": "bridge",
+  "version": 1,
+  "title": "Chartplotter bridge",
+  "description": "Where the soundings the chartplotter records on this device's card are uploaded. They go to the Signal K server this device is connected to, with its access token, under this device's own vessel context.",
+  "keys": [
+    {"name": "upload", "type": "bool", "default": true,
+     "title": "Upload new records",
+     "description": "Off keeps every record on the card and uploads nothing; progress stays where it is, so turning it back on later loses nothing."},
+    {"name": "upload_path", "type": "string", "default": "/plugins/crowd-depth/realbathy", "maxLength": 120,
+     "title": "Upload path on the server",
+     "description": "Path appended to the Signal K server's address. Each POST carries one run of RealBathy records; a 2xx reply means the server has them."}
+  ]
+}
