@@ -38,7 +38,10 @@ jobs:
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # The issues labels endpoint, which serves pull requests too, takes
+    # issues: write; pull-requests: write alone is not documented for it.
     permissions:
+      issues: write
       pull-requests: write
     steps:
       - env:
@@ -67,16 +70,24 @@ jobs:
           if [ -n "$bang" ] || grep -qE '^BREAKING[ -]CHANGE: ' <<< "$BODY"; then
             wanted=breaking-change
           fi
-          current=$(gh pr view "$NUMBER" --repo "$REPO" --json labels --jq '[.labels[].name] | join(" ")')
-          args=()
+          # The REST labels endpoints rather than gh pr edit, which reads the
+          # pull request's project cards first and fails on a project-linked
+          # one with this token.
+          current=$(gh api "repos/$REPO/issues/$NUMBER/labels" --jq '[.[].name] | join(" ")')
+          add=(); remove=()
           for label in $managed; do
             case " $current " in *" $label "*) has=1 ;; *) has=0 ;; esac
-            if [ "$label" = "$wanted" ] && [ "$has" = 0 ]; then args+=(--add-label "$label"); fi
-            if [ "$label" != "$wanted" ] && [ "$has" = 1 ]; then args+=(--remove-label "$label"); fi
+            if [ "$label" = "$wanted" ] && [ "$has" = 0 ]; then add+=("$label"); fi
+            if [ "$label" != "$wanted" ] && [ "$has" = 1 ]; then remove+=("$label"); fi
           done
-          if [ "${#args[@]}" = 0 ]; then
+          if [ "${#add[@]}" = 0 ] && [ "${#remove[@]}" = 0 ]; then
             echo "#$NUMBER '$TITLE': nothing to change (${wanted:-no managed label})"
-          else
-            gh pr edit "$NUMBER" --repo "$REPO" "${args[@]}"
-            echo "#$NUMBER '$TITLE': ${args[*]}"
+            exit 0
           fi
+          for label in "${add[@]}"; do
+            gh api -X POST "repos/$REPO/issues/$NUMBER/labels" -f "labels[]=$label" > /dev/null
+          done
+          for label in "${remove[@]}"; do
+            gh api -X DELETE "repos/$REPO/issues/$NUMBER/labels/$label" > /dev/null
+          done
+          echo "#$NUMBER '$TITLE': added ${add[*]:-nothing}, removed ${remove[*]:-nothing}"
