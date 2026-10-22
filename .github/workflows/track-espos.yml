@@ -28,9 +28,10 @@
 # The PR is opened with a GitHub App's token (RELEASE_APP_PRIVATE_KEY, with the
 # App's Client ID inline), because GitHub holds the checks of a PR opened with
 # the workflow token until a maintainer approves them, while an App's PR runs
-# them at once. Without that secret it falls back to the workflow token, which
-# also needs "Allow GitHub Actions to create and approve pull requests" enabled
-# in the repository's Actions settings.
+# them at once. The App must be installed on this repository: the key alone
+# gets a 404. Without the secret, or without the installation, it falls back to
+# the workflow token, which also needs "Allow GitHub Actions to create and
+# approve pull requests" enabled in the repository's Actions settings.
 name: Track espOS releases
 
 # One run at a time: a scheduled and a manual run overlapping could both see no
@@ -162,9 +163,12 @@ jobs:
             echo "idf_moved=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # continue-on-error: a key whose App is not installed on this repository
+      # answers 404, and the bump must still go out with the workflow token.
       - name: Get the App token for the PR
         id: app-token
         if: steps.target.outputs.skip == 'false' && env.APP_CONFIGURED == 'true'
+        continue-on-error: true
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           # The Client ID is public (the App's settings page shows it), so it
@@ -187,6 +191,11 @@ jobs:
           STALE: ${{ steps.bump.outputs.stale }}
         run: |
           set -euo pipefail
+          if [ "$APP_CONFIGURED" = true ] && [ "$AS_APP" != true ]; then
+            echo "::warning::RELEASE_APP_PRIVATE_KEY is set but gave no token" \
+                 "(is the App installed on $GITHUB_REPOSITORY?); opening the PR" \
+                 "with the workflow token instead"
+          fi
           BRANCH="track-espos-$TAG"
           OLD_DESC=$(git -C espos describe --tags "$PINNED" 2>/dev/null || echo "${PINNED:0:7}")
 
