@@ -29,7 +29,9 @@ records go.
 - **Partition tables are fixed at the first USB flash.** OTA never rewrites
   them, so a change reaches only newly flashed boards.
 - **Build through `scripts/build.sh`** (espOS's locked, nice'd wrapper), one
-  build directory per target. Zero warnings.
+  build directory per target. Zero warnings, in this repo's code and in
+  espOS; CI skips warnings from registry components under
+  `managed_components/`, which are not ours to fix.
 - **Never commit boat configuration** (WiFi credentials, server addresses) or
   the signing key. Site config lives in NVS.
 
