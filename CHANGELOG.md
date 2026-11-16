@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.1 (2026-11-16)
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+
+## What's Changed
+### Other
+* fix: bump espOS to v0.29.2 by @github-actions[bot] in https://github.com/dirkwa/espos-bathy-bridge/pull/20
+
+
+**Full Changelog**: https://github.com/dirkwa/espos-bathy-bridge/compare/v0.1.0...v0.1.1
+
 ## 0.1.0 (2026-10-18)
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
