@@ -88,6 +88,9 @@ jobs:
       # compiler, linker and CMake warnings alike. The one expected warning is
       # the development signing key above; CMake wraps its text over several
       # lines, so each CMake warning is read with the lines that follow it.
+      # Registry components under managed_components/ are not ours to fix,
+      # and espOS pins their versions exactly, so a warning in one (esp_hosted
+      # 3.1.0 has an unused function) would block every espOS bump here.
       - name: fail on build warnings
         run: |
           set -euo pipefail
@@ -102,6 +105,7 @@ jobs:
               next
             }
             /CMake Warning/ { pending = 1; text = $0; n = 0; next }
+            /managed_components\// && /warning:/ { next }
             /warning:/ { print }
             END { if (pending) print text }
           ')
